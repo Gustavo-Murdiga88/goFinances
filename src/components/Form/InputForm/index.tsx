@@ -2,10 +2,10 @@ import React from 'react'
 import { Container, Error } from './styles'
 import { Input } from '../Input'
 import { TextInputProps } from 'react-native'
-import { Control, Controller, FieldErrors } from 'react-hook-form'
+import { Control, Controller, FieldErrors} from 'react-hook-form'
 
 interface Props extends TextInputProps {
-  control: Control
+  control: Control<any, any>
   name: string
   error: any,
 }

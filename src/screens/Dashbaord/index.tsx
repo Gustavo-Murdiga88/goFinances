@@ -8,6 +8,7 @@ import {
   Photo,
   UserGreeting,
   UserName,
+  ButtonPower,
   Icon,
   HighlightCards,
   Transactions,
@@ -69,7 +70,9 @@ export function Dashboard() {
                   <UserName>Gustavo</UserName>
                 </User>
               </UserInfo>
+              <ButtonPower >
                 <Icon name={'power'} />
+              </ButtonPower>
             </UserWrapper>
           </Header>
           <HighlightCards>

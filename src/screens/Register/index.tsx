@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-
 import { Alert, Keyboard, Modal, TouchableWithoutFeedback } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Button } from "../../components/Form/Button";
 import { TransactionTypeButton } from "../../components/Form/TransactionTypeButton";
@@ -8,6 +8,7 @@ import { CategorySelectButton } from "../../components/Form/CategorySelectButton
 import { CategorySelect } from "../CategorySelect";
 import { InputForm } from "../../components/Form/InputForm";
 
+import { useNavigation } from '@react-navigation/native'
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
@@ -30,6 +31,15 @@ interface NavigationProps {
   navigate: (screen: string) => void;
 }
 
+const schema = Yup.object().shape({
+  name: Yup.string().required("Nome é obrigatório"),
+  amount: Yup.number()
+    .typeError("Informe um valor numérico")
+    .positive("O Valor não pode ser negativo")
+    .required("O valor obrigatório"),
+});
+
+const dataKey = "@gofinances:transactions";
 export function Register() {
   const [transactionType, setTransactionType] = useState("");
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -39,19 +49,14 @@ export function Register() {
     icon: "list",
   });
 
-  const schema = Yup.object().shape({
-    name: Yup.string().required("Nome é obrigatório"),
-    amount: Yup.number()
-      .typeError("Informe um valor numérico")
-      .positive("O Valor não pode ser negativo")
-      .required("O valor obrigatório"),
-  });
+  const { navigate } = useNavigation();
+
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
 
@@ -65,6 +70,51 @@ export function Register() {
 
   function handleTransactionTypeSelect(type: "positive" | "negative") {
     setTransactionType(type);
+  }
+
+  async function handleRegister(form: FormData) {
+    if (!transactionType) {
+      Alert.alert("Selecione uma transação");
+    }
+
+    if (category.name === "category") {
+      Alert.alert("Selecione uma categoria");
+    }
+
+    const newTransaction = {
+      id: String(new Date().getTime()),
+      name: form.name,
+      amount: form.amount,
+      transactionType,
+      category: category.key,
+      date: new Date(),
+    };
+
+    try {
+      const values = await AsyncStorage.getItem(dataKey);
+
+      const data = [
+        ...values!,
+        newTransaction,
+      ]
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(data));
+
+      setTransactionType('');
+      setCategory({
+        key: "category",
+        name: "Categoria",
+        icon: "list",
+      });
+
+      reset(); 
+      //@ts-ignore 
+      navigate('Listagem');
+
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Algo de errado aconteceu");
+    }
   }
 
   return (
@@ -114,13 +164,18 @@ export function Register() {
             </TransactionsTypes>
 
             <CategorySelectButton
+              activeOpacity={0.8}
               icon={category.icon}
               onPress={handleOpenSelectCategoryModal}
               title={category.name}
             />
           </Fields>
 
-          <Button title={"Enviar"} onPress={() => {}} activeOpacity={0.8} />
+          <Button
+            title={"Enviar"}
+            onPress={handleSubmit(handleRegister)}
+            activeOpacity={0.8}
+          />
         </Form>
 
         <Modal visible={categoryModalOpen}>

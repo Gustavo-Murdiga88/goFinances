@@ -1,4 +1,5 @@
 import styled from 'styled-components/native'
+import {TouchableOpacityProps} from 'react-native'
 import { RFValue } from 'react-native-responsive-fontsize'
 import { Feather } from '@expo/vector-icons'
 import {View} from 'react-native';
@@ -24,7 +25,9 @@ export const Title = styled.Text`
   font-family: ${({ theme }) => theme.fonts.regular};
   font-size: ${RFValue(18)}px;
 `
-export const Category = styled.TouchableOpacity<CategoryProps>`
+export const Category = styled.TouchableOpacity.attrs({
+  activeOpacity: 0.8,
+} as TouchableOpacityProps)<CategoryProps>`
   width: 100%;
   padding: ${RFValue(15)}px;
   flex-direction: row;
