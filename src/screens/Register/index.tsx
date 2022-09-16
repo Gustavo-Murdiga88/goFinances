@@ -73,12 +73,15 @@ export function Register() {
   }
 
   async function handleRegister(form: FormData) {
+
     if (!transactionType) {
       Alert.alert("Selecione uma transação");
+      return;
     }
 
     if (category.name === "category") {
       Alert.alert("Selecione uma categoria");
+      return
     }
 
     const newTransaction = {
@@ -87,14 +90,14 @@ export function Register() {
       amount: form.amount,
       transactionType,
       category: category.key,
-      date: new Date(),
+      date: String(new Date()),
     };
 
     try {
-      const values = await AsyncStorage.getItem(dataKey);
-
+      const dataStorage = await AsyncStorage.getItem(dataKey);
+      const values = JSON.parse(dataStorage ? dataStorage : '[]');
       const data = [
-        ...values!,
+        ...values,
         newTransaction,
       ]
 
