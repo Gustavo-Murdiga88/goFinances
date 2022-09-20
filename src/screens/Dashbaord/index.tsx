@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import {
@@ -17,6 +18,7 @@ import {
   Title,
   TransactionsList,
   SubHeader,
+  LoadingContainer,
 } from "./styles";
 
 import { HighlightCard } from "../../components/HighlightCard";
@@ -24,22 +26,56 @@ import {
   TransactionCard,
   TransactionCardProps,
 } from "../../components/TransactionCard";
+import { useTheme } from "styled-components";
 export interface DataListProps extends TransactionCardProps {
   id: string;
 }
 
 type TotalCardsProps = {
-  amount: string;
-  total: string;
-  withdraw: string;
-}
+  entries: {
+    total: string;
+    lastTransaction: string;
+  };
+  amount: {
+    total: string;
+    lastTransaction: string;
+  };
+  withdraw: {
+    total: string;
+    lastTransaction: string;
+  };
+};
 
 const dataKey = "@gofinances:transactions";
-export function Dashboard() {
-  const [data, setData] = useState<DataListProps[]>([]);
-  const [totalCards, setTotalCards ] = useState<TotalCardsProps>({} as TotalCardsProps)
-  async function onLoadTransactions() {
 
+function handleGetTimeLastTransaction(
+  data: DataListProps[],
+  type: "positive" | "negative"
+) {
+  const lastTransaction = new Date(
+    Math.max.apply(
+      Math,
+      data
+        .filter((transaction) => transaction.transactionType === type)
+        .map((transaction) => new Date(transaction.date).getTime())
+    )
+  );
+  return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleDateString(
+    "pt-BR",
+    {
+      month: "long",
+    }
+  )}`;
+}
+export function Dashboard() {
+  const theme = useTheme();
+  const [data, setData] = useState<DataListProps[]>([]);
+  const [totalCards, setTotalCards] = useState<TotalCardsProps>(
+    {} as TotalCardsProps
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  async function onLoadTransactions() {
     const response = await AsyncStorage.getItem(dataKey);
     const transactions: Array<DataListProps> = response
       ? JSON.parse(response)
@@ -67,51 +103,82 @@ export function Dashboard() {
     setData(transactionsFormatted);
   }
 
-  async function amountBillsToPay(){
+  async function amountBillsToPay() {
     const data = await AsyncStorage.getItem(dataKey);
-    const transactions: Array<DataListProps>= JSON.parse(data || '[]'); 
+    const transactions: Array<DataListProps> = JSON.parse(data || "[]");
 
-    const amountTransactions = transactions.reduce((acc, transaction) => {
-      if( transaction.transactionType === 'negative'){
+    const amountTransactions = transactions.reduce(
+      (acc, transaction) => {
+        if (transaction.transactionType === "negative") {
           acc.withdraw += Number(transaction.amount);
           acc.total -= Number(transaction.amount);
           return acc;
-      }else {
+        } else {
           acc.amount += Number(transaction.amount);
           acc.total += Number(transaction.amount);
           return acc;
+        }
+      },
+      {
+        amount: 0,
+        withdraw: 0,
+        total: 0,
       }
+    );
 
-    }, {
-      amount: 0,
-      withdraw: 0,
-      total: 0,
-    })
+    const { amount, total, withdraw } = amountTransactions;
 
-    const {amount, total, withdraw} = amountTransactions;
+    const lastTransactionAmount = handleGetTimeLastTransaction(
+      transactions,
+      "positive"
+    );
+    const lastTransactionWithdraw = handleGetTimeLastTransaction(
+      transactions,
+      "negative"
+    );
+
+    const lastTransactionTotal = `01 à ${lastTransactionAmount}`
 
     setTotalCards({
-     total: total.toLocaleString('pt-BR',{
-      style:'currency',
-      currency: 'BRL',
-     }),
-     amount: amount.toLocaleString('pt-BR',{
-      style:'currency',
-      currency: 'BRL',
-     }),
-     withdraw: withdraw.toLocaleString('pt-BR',{
-      style:'currency',
-      currency: 'BRL',
-     }),
-    })
+      amount: {
+        total: total.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction: lastTransactionTotal,
+      },
+      entries: {
+        total: amount.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction: `Última entrada dia ${lastTransactionAmount}`,
+      },
+      withdraw: {
+        total: withdraw.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction: `Última saída dia ${lastTransactionWithdraw}`,
+      },
+    });
+    setIsLoading(false);
   }
 
   useFocusEffect(
     useCallback(() => {
       onLoadTransactions();
-      amountBillsToPay()
+      amountBillsToPay();
     }, [])
   );
+
+  if (isLoading) {
+    return (
+      <LoadingContainer>
+        <ActivityIndicator size="large" color={theme.colors.secondary} />
+      </LoadingContainer>
+    );
+  }
 
   return (
     <Container>
@@ -137,20 +204,20 @@ export function Dashboard() {
         <HighlightCard
           type={"up"}
           title={"Entradas"}
-          amount={totalCards.amount}
-          lastTransaction="31/08/2022"
+          amount={totalCards.entries.total}
+          lastTransaction={totalCards.amount.lastTransaction}
         />
         <HighlightCard
           type={"down"}
           title={"Saídas"}
-          amount={totalCards.withdraw}
-          lastTransaction="31/08/2022"
+          amount={totalCards.withdraw.total}
+          lastTransaction={totalCards.withdraw.lastTransaction}
         />
         <HighlightCard
           type={"total"}
           title={"Total"}
-          amount={totalCards.total}
-          lastTransaction="31/08/2022"
+          amount={totalCards.amount.total}
+          lastTransaction={totalCards.amount.lastTransaction}
         />
       </HighlightCards>
       <Transactions>

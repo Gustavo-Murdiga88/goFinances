@@ -13,6 +13,7 @@ import { categories } from '../../utils/categories'
 
 import { FlatList } from 'react-native'
 import { Button } from '../../components/Form/Button'
+import { HeaderComponent } from '../../components/Header'
 
 interface CategoryProps {
   key: string
@@ -37,9 +38,7 @@ export function CategorySelect({
 
   return (
     <Container>
-      <Header>
-        <Title>Categoria</Title>
-      </Header>
+      <HeaderComponent title='Categoria'/>
 
       <FlatList
         data={categories}

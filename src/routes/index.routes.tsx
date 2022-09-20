@@ -6,6 +6,7 @@ import { Dashboard } from "../screens/Dashbaord";
 import { Register } from "../screens/Register";
 
 import { Feather } from "@expo/vector-icons"; 
+import { Resume } from "../screens/Resume";
 
 const Icons = {
     pie: 'pie-chart',
@@ -48,7 +49,7 @@ export function Routes() {
     >
       <Screen name="Listagem" component={Dashboard} />
       <Screen name="Cadastrar" component={Register} />
-      <Screen name="Resumo" component={Register} />
+      <Screen name="Resumo" component={Resume} />
     </Navigator>
   );
 }

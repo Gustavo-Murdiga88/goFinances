@@ -91,3 +91,8 @@ export const SubHeader = styled.View`
   justify-content: space-between;
   align-items: center;
 `;
+
+export const LoadingContainer = styled.View`
+  flex: 1;
+  width: 100%;
+  `;

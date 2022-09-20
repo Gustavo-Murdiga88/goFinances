@@ -15,12 +15,11 @@ import * as Yup from "yup";
 
 import {
   Container,
-  Title,
-  Header,
   Form,
   Fields,
   TransactionsTypes,
 } from "./styles";
+import { HeaderComponent } from "../../components/Header";
 
 interface FormData {
   name: string;
@@ -123,9 +122,7 @@ export function Register() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Container>
-        <Header>
-          <Title>Cadastro</Title>
-        </Header>
+        <HeaderComponent title="Cadastro"/>
 
         <Form>
           <Fields>
