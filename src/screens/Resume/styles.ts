@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { ScrollViewProps, TouchableOpacityProps} from "react-native";
+import { ScrollViewProps, TouchableOpacity, TouchableOpacityProps} from "react-native";
 import {Feather} from '@expo/vector-icons';
 import { RFValue } from "react-native-responsive-fontsize";
 
@@ -26,13 +26,16 @@ export const Month = styled.Text`
   font-size: ${RFValue(18)}px;
   color: ${({ theme }) => theme.colors.title}
 `;
-export const MonthSelectButton = styled.TouchableOpacity.attrs({
+
+export const MonthSelectButton = styled(TouchableOpacity as new () => TouchableOpacity).attrs({
   activeOpacity: 0.8,
 } as TouchableOpacityProps)``;
+
 export const MonthSelectIcon = styled(Feather)`
   font-family: ${({ theme }) => theme.fonts.regular};
   color: ${({ theme }) => theme.colors.title}
 `;
+
 export const MonthSelect = styled.View`
   width: 100%;
   margin-top: 24px;

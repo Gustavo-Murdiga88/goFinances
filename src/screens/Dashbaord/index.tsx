@@ -175,7 +175,7 @@ export function Dashboard() {
   if (isLoading) {
     return (
       <LoadingContainer>
-        <ActivityIndicator size="large" color={theme.colors.secondary} />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </LoadingContainer>
     );
   }

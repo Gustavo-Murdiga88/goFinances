@@ -6,6 +6,8 @@ import { RFValue } from "react-native-responsive-fontsize";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useState, useCallback } from "react";
+import {addMonths, subMonths, format} from 'date-fns'
+import { ptBR } from 'date-fns/locale';
 
 import { categories } from "../../utils/categories";
 
@@ -18,6 +20,9 @@ import {
   MonthSelectIcon,
   MonthSelect,
 } from "./styles";
+import { LoadContainer } from '../../components/Loading/styles';
+import { Loading } from '../../components/Loading';
+import { isLoaded } from "expo-font";
 
 type TransactionsData = {
   transactionType: "positive" | "negative";
@@ -38,7 +43,18 @@ type TotalByCategoryProps = {
 
 export function Resume() {
   const theme = useTheme();
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [historyCards, setHistoryCards] = useState<TotalByCategoryProps[]>([]);
+
+  function handleDateChange(action: "next" | "prev"){
+    setIsLoading(true);
+    if(action === 'next'){
+      setSelectedDate(addMonths(selectedDate, 1))
+    }else{
+      setSelectedDate(subMonths(selectedDate, 1))
+    }
+  }
 
   async function loadData() {
     const dataKey = "@gofinances:transactions";
@@ -49,14 +65,16 @@ export function Resume() {
       : [];
 
     const expensives = responseFormatted.filter(
-      (expansives) => expansives.transactionType === "negative"
+      (expansives) => expansives.transactionType === "negative" &&
+      new Date(expansives.date).getMonth() === selectedDate.getMonth() &&
+      new Date(expansives.date).getFullYear() === selectedDate.getFullYear()
     );
 
     const expensivesTotal = expensives.reduce(
       (acc, expensive) => Number(expensive.amount) + acc,
       0
     );
-    console.log(expensivesTotal);
+
     const totalByCategory: TotalByCategoryProps[] = [];
     categories.forEach((category) => {
       let categorySum = 0;
@@ -85,23 +103,28 @@ export function Resume() {
     });
 
     setHistoryCards(totalByCategory);
+    setIsLoading(false);
   }
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+    }, [selectedDate])
   );
+
   return (
     <Container>
       <HeaderComponent title="Resumo por categoria" />
+      {isLoading ? <Loading />: (
       <Content>
         <MonthSelect>
-          <MonthSelectButton>
+          <MonthSelectButton onPress={() => handleDateChange('prev')}>
             <MonthSelectIcon name='chevron-left' size={24}/>
           </MonthSelectButton>
-          <Month>maio, 2022</Month>
-          <MonthSelectButton>
+          <Month>{format(selectedDate, 'MMMM, yyyy',{
+            locale: ptBR,
+          })}</Month>
+          <MonthSelectButton onPress={() => handleDateChange('next')}>
             <MonthSelectIcon name='chevron-right' size={24}/>
           </MonthSelectButton>
         </MonthSelect>
@@ -130,6 +153,7 @@ export function Resume() {
           />
         ))}
       </Content>
+      )}
     </Container>
   );
 }

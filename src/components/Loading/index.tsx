@@ -4,7 +4,7 @@ import { LoadContainer } from './styles'
 import { ActivityIndicator } from 'react-native'
 import { useTheme } from 'styled-components'
 
-export function Loading() {
+export function Loading({}) {
   const theme = useTheme()
   return (
     <LoadContainer>
