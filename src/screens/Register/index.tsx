@@ -20,6 +20,7 @@ import {
   TransactionsTypes,
 } from "./styles";
 import { HeaderComponent } from "../../components/Header";
+import { useAuthContext } from "../../context/Auth";
 
 interface FormData {
   name: string;
@@ -38,8 +39,9 @@ const schema = Yup.object().shape({
     .required("O valor obrigatório"),
 });
 
-const dataKey = "@gofinances:transactions";
 export function Register() {
+  const { user } = useAuthContext();
+  const dataKey = `@gofinances:transactions_${user.id}`;
   const [transactionType, setTransactionType] = useState("");
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [category, setCategory] = useState({

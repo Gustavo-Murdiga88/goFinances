@@ -1,6 +1,7 @@
 import { HeaderComponent } from "../../components/Header";
 import { HistoryCard } from "../../components/HistoryCard";
 import { VictoryPie } from "victory-native";
+import { useAuthContext } from "../../context/Auth";
 import { useTheme } from "styled-components";
 import { RFValue } from "react-native-responsive-fontsize";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,9 +21,7 @@ import {
   MonthSelectIcon,
   MonthSelect,
 } from "./styles";
-import { LoadContainer } from '../../components/Loading/styles';
 import { Loading } from '../../components/Loading';
-import { isLoaded } from "expo-font";
 
 type TransactionsData = {
   transactionType: "positive" | "negative";
@@ -43,10 +42,11 @@ type TotalByCategoryProps = {
 
 export function Resume() {
   const theme = useTheme();
+  const { user } = useAuthContext();
   const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [historyCards, setHistoryCards] = useState<TotalByCategoryProps[]>([]);
-
+  
   function handleDateChange(action: "next" | "prev"){
     setIsLoading(true);
     if(action === 'next'){
@@ -55,9 +55,9 @@ export function Resume() {
       setSelectedDate(subMonths(selectedDate, 1))
     }
   }
-
+  
   async function loadData() {
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_${user.id}`;
 
     const response = await AsyncStorage.getItem(dataKey);
     const responseFormatted: TransactionsData[] = response
@@ -101,7 +101,7 @@ export function Resume() {
         });
       }
     });
-
+    
     setHistoryCards(totalByCategory);
     setIsLoading(false);
   }

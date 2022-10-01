@@ -1,5 +1,4 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { ThemeProvider } from "styled-components";
 import "intl";
 import "intl/locale-data/jsonp/pt-BR";
@@ -12,19 +11,18 @@ import {
 import { StatusBar } from "react-native";
 
 import theme from "./src/global/styles/theme";
-
+import { AuthProvider, useAuthContext } from "./src/context/Auth";
 import { Routes } from "./src/routes/index.routes";
-import { SingIn } from "./src/screens/SingIn";
-import { AuthProvider } from "./src/context/Auth";
 
 export default function App() {
+  const { userLoading } = useAuthContext();
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_700Bold,
   });
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || userLoading) {
     return null;
   }
 
@@ -35,12 +33,9 @@ export default function App() {
         translucent
         backgroundColor={theme.colors.primary}
       />
-      <NavigationContainer>
         <AuthProvider>
-          {/* <Routes /> */}
-          <SingIn />
+          <Routes />
         </AuthProvider>
-      </NavigationContainer>
     </ThemeProvider>
   );
 }

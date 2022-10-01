@@ -27,6 +27,7 @@ import {
   TransactionCardProps,
 } from "../../components/TransactionCard";
 import { useTheme } from "styled-components";
+import { useAuthContext } from "../../context/Auth";
 export interface DataListProps extends TransactionCardProps {
   id: string;
 }
@@ -46,18 +47,21 @@ type TotalCardsProps = {
   };
 };
 
-const dataKey = "@gofinances:transactions";
 
 function handleGetTimeLastTransaction(
   data: DataListProps[],
   type: "positive" | "negative"
 ) {
+  const collectionFilteredList = data.filter((transaction) => transaction.transactionType === type);
+
+  if(collectionFilteredList.length === 0) {
+    return 0;
+  }
+
   const lastTransaction = new Date(
     Math.max.apply(
       Math,
-      data
-        .filter((transaction) => transaction.transactionType === type)
-        .map((transaction) => new Date(transaction.date).getTime())
+        collectionFilteredList.map((transaction) => new Date(transaction.date).getTime())
     )
   );
   return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleDateString(
@@ -68,6 +72,8 @@ function handleGetTimeLastTransaction(
   )}`;
 }
 export function Dashboard() {
+  const { user, singOut } = useAuthContext();
+  const dataKey = `@gofinances:transactions_${user.id}`;
   const theme = useTheme();
   const [data, setData] = useState<DataListProps[]>([]);
   const [totalCards, setTotalCards] = useState<TotalCardsProps>(
@@ -145,14 +151,14 @@ export function Dashboard() {
           style: "currency",
           currency: "BRL",
         }),
-        lastTransaction: lastTransactionTotal,
+        lastTransaction: lastTransactionAmount ? `Última entrada dia ${lastTransactionAmount}`: 'Não há transações',
       },
       entries: {
         total: amount.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
         }),
-        lastTransaction: `Última entrada dia ${lastTransactionAmount}`,
+        lastTransaction: lastTransactionAmount ? `Última entrada dia ${lastTransactionAmount}`: 'Não há transações',
       },
       withdraw: {
         total: withdraw.toLocaleString("pt-BR", {
@@ -187,15 +193,15 @@ export function Dashboard() {
           <UserInfo>
             <Photo
               source={{
-                uri: "https://avatars.githubusercontent.com/u/74632138?v=4",
+                uri: user.photo,
               }}
             />
             <User>
               <UserGreeting>Olá, </UserGreeting>
-              <UserName>Gustavo</UserName>
+              <UserName>{user.name}</UserName>
             </User>
           </UserInfo>
-          <ButtonPower>
+          <ButtonPower onPress={singOut}>
             <Icon name={"power"} />
           </ButtonPower>
         </UserWrapper>
@@ -205,7 +211,7 @@ export function Dashboard() {
           type={"up"}
           title={"Entradas"}
           amount={totalCards.entries.total}
-          lastTransaction={totalCards.amount.lastTransaction}
+          lastTransaction={totalCards.entries.lastTransaction}
         />
         <HighlightCard
           type={"down"}
