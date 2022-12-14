@@ -1,5 +1,5 @@
 import styled from 'styled-components/native'
-import { TextInput } from 'react-native'
+import { TextInput, TextInputProps} from 'react-native'
 import { RFValue } from 'react-native-responsive-fontsize'
 import { css } from 'styled-components'
 

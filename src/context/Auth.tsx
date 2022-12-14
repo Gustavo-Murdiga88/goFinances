@@ -57,7 +57,6 @@ export function AuthProvider({ children }: AuthProvider) {
       // const { type, params } = (await AuthSession.startAsync({
       //   authUrl,
       // })) as AuthResponse;
-
       if (type === "success") {
         const { params } = response as AuthResponse;
         const responseFetch = await fetch(
