@@ -1,4 +1,10 @@
-import react, { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import react, {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
 import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,11 +44,12 @@ export function AuthProvider({ children }: AuthProvider) {
   } as UserProps);
   const [userLoading, setUserLoading] = useState(true);
 
-  const KeyUser = "@gofinances:user"; 
+  const KeyUser = "@gofinances:user";
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     expoClientId:
       "719414036935-omr7ameo10qrmfalamlpj0rqrppg6h7s.apps.googleusercontent.com",
+      iosClientId: '',
   });
 
   async function SingInWithGoogle() {
@@ -75,9 +82,9 @@ export function AuthProvider({ children }: AuthProvider) {
           KeyUser,
           JSON.stringify(userLogged, null, 2)
         );
-    }
+      }
     } catch (err) {
-      console.log(err)
+      console.log(err);
       throw new Error(err as string);
     }
   }
@@ -89,8 +96,8 @@ export function AuthProvider({ children }: AuthProvider) {
         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
       ],
     });
-    
-    const {email, fullName, identityToken,user} = credential
+
+    const { email, fullName, identityToken, user } = credential;
 
     const userLogged = {
       email: email!,
@@ -100,28 +107,25 @@ export function AuthProvider({ children }: AuthProvider) {
     };
 
     setUser(userLogged);
-    await AsyncStorage.setItem(
-      KeyUser,
-      JSON.stringify(userLogged, null, 2)
-    );
+    await AsyncStorage.setItem(KeyUser, JSON.stringify(userLogged, null, 2));
   }
 
-  async function singOut(){
-   await AsyncStorage.removeItem(KeyUser);
+  async function singOut() {
+    await AsyncStorage.removeItem(KeyUser);
     setUser({} as UserProps);
   }
 
   useEffect(() => {
-    async function loadInfoUser(){
+    async function loadInfoUser() {
       const userInfo = await AsyncStorage.getItem(KeyUser);
-      if(userInfo){
+      if (userInfo) {
         const user = JSON.parse(userInfo) as UserProps;
         setUser(user);
       }
       setUserLoading(false);
     }
-    loadInfoUser()
-  }, [])
+    loadInfoUser();
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -130,7 +134,7 @@ export function AuthProvider({ children }: AuthProvider) {
         singOut,
         user,
         SingInWithGoogle,
-        SingInWithApple, 
+        SingInWithApple,
       }}
     >
       {children}
